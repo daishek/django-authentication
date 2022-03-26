@@ -2,7 +2,13 @@ from django.db import models
 
 # import builtin django User model 
 from django.contrib.auth.models import User
-# Create your models here.
+
+# use signals
+from django.db.models.signals import post_save 
+
+# import receiver to connect receiver to a signal
+from django.dispatch import receiver
+#  Create your models here.
 ''' User model
     username
     password
@@ -18,3 +24,22 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user.first_name} {self.user.last_name}'
+
+# -----------------------------------------
+# how it work? 
+# - Signup [create user]
+#   - signal
+#   - call function -> create_user_profile
+#   - create the profile for this user ...
+# -----------------------------------------
+
+
+@receiver(post_save, sender=User) #connect this function with the user [the user sends a signal, reciever took the signal & call the function...]
+def create_user_profile(sender, instance, created, **kwargs):
+    # check if created
+    if created:
+        # create the profile...
+        Profile.objects.create(
+            # instance -> User instance model
+            user = instance
+        )
